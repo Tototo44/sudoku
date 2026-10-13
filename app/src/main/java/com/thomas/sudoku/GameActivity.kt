@@ -141,7 +141,10 @@ class GameActivity : Activity() {
             game = this@GameActivity.game
             onCellTap = { i -> this@GameActivity.onCellTapped(i) }
         }
-        column.addView(grid, matchWrap().apply { topMargin = dp(14) })
+        // La grille prend la place disponible (plus petite sur un petit téléphone), toujours carrée.
+        val gridBox = FrameLayout(this)
+        gridBox.addView(grid, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER))
+        column.addView(gridBox, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f).apply { topMargin = dp(14) })
 
         // Outils : Effacer et Crayon (pas d'annuler, pas d'indice).
         val tools = hbox().apply { gravity = Gravity.CENTER }
