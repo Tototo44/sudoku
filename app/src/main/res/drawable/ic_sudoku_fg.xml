@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- le plateau -->
+    <path
+        android:fillColor="#FBFCF8"
+        android:pathData="M38,31h32a7,7 0 0 1 7,7v32a7,7 0 0 1 -7,7h-32a7,7 0 0 1 -7,-7v-32a7,7 0 0 1 7,-7z" />
+    <!-- deux carrés vert clair et le carré du centre doré -->
+    <path
+        android:fillColor="#BFE0CD"
+        android:pathData="M34,34h9v9h-9z M65,65h9v9h-9z" />
+    <path
+        android:fillColor="#E3B23C"
+        android:pathData="M49.5,49.5h9v9h-9z" />
+    <!-- les lignes des carrés -->
+    <path
+        android:fillColor="#8AA597"
+        android:pathData="M45,33h2v42h-2z M61,33h2v42h-2z M33,45h42v2h-42z M33,61h42v2h-42z" />
+</vector>
