@@ -156,8 +156,9 @@ class GameActivity : Activity() {
         tools.addView(pencilBox, LinearLayout.LayoutParams(dp(110), ViewGroup.LayoutParams.WRAP_CONTENT))
         column.addView(tools, matchWrap().apply { topMargin = dp(16) })
 
+        // Le pavé garde un peu de place en haut pour l'effacement des touches : l'écart reste le même qu'avant.
         pad = PadView(this).apply { onDigit = { d -> this@GameActivity.onDigitTapped(d) } }
-        column.addView(pad, matchWrap().apply { topMargin = dp(16) })
+        column.addView(pad, matchWrap().apply { topMargin = dp(2) })
 
         setContentView(screen)
         edgeToEdge(column)
@@ -206,17 +207,41 @@ class GameActivity : Activity() {
                 if (move.lost) onLost()
             }
             is Move.Right -> {
-                move.rows.forEach { grid.wave(Cells.rows[it]) }
-                move.cols.forEach { grid.wave(Cells.cols[it]) }
-                move.boxes.forEach { grid.pop(Cells.boxes[it]) }
-                when {
-                    move.won -> {}
-                    move.boxes.isNotEmpty() -> Buzz.medium(this)
-                    move.rows.isNotEmpty() || move.cols.isNotEmpty() -> Buzz.short(this)
+                if (move.digitDone) pad.fadeOut(d)
+                if (move.won) {
+                    refresh()
+                    onWon(i)
+                } else {
+                    animateMove(move, i, d)
+                    refresh()
                 }
-                refresh()
-                if (move.won) onWon()
             }
+        }
+    }
+
+    /**
+     * Les animations d'un chiffre juste : elles partent de la case [origin] et s'étendent dans tous les sens.
+     * Les cases d'un carré terminé prennent l'éclat doré, les autres cases des lignes et colonnes terminées la vague verte.
+     * Si c'était le dernier des 9 exemplaires du chiffre [d], ses 9 cases brillent ensuite.
+     */
+    private fun animateMove(move: Move.Right, origin: Int, d: Int) {
+        val gold = LinkedHashSet<Int>()
+        move.boxes.forEach { b -> Cells.boxes[b].forEach { gold += it } }
+        val green = LinkedHashSet<Int>()
+        (move.rows.map { Cells.rows[it] } + move.cols.map { Cells.cols[it] }).forEach { unit ->
+            unit.forEach { if (it !in gold) green += it }
+        }
+        if (gold.isNotEmpty()) grid.pop(gold.toIntArray(), origin)
+        if (green.isNotEmpty()) grid.wave(green.toIntArray(), origin)
+        val unitDone = move.rows.isNotEmpty() || move.cols.isNotEmpty() || move.boxes.isNotEmpty()
+        if (move.digitDone) {
+            val same = (0 until 81).filter { game.isSolved(it) && game.value(it) == d }.toIntArray()
+            // Si une ligne ou un carré s'anime déjà, la brillance arrive juste après.
+            grid.shine(same, origin, if (unitDone) 500L else 0L)
+        }
+        when {
+            move.boxes.isNotEmpty() -> Buzz.medium(this)
+            unitDone || move.digitDone -> Buzz.short(this)
         }
     }
 
@@ -297,7 +322,7 @@ class GameActivity : Activity() {
         refresh()
     }
 
-    private fun onWon() {
+    private fun onWon(origin: Int) {
         tick()
         val time = game.elapsedMs
         store.clearGame(game.key)
@@ -334,8 +359,10 @@ class GameActivity : Activity() {
 
         selected = -1
         grid.selected = -1
-        grid.celebrate()
+        grid.celebrate(origin)
         Buzz.win(this)
+        // La fenêtre « Bravo » arrive quand la vague a presque fini de traverser la grille.
+        val wait = (grid.effectsRemaining() - 400L).coerceAtLeast(1500L)
         val fromCalendar = intent.getBooleanExtra(EXTRA_FROM_CALENDAR, false)
         val level = game.level
         val day = if (game.isDaily) LocalDate.parse(game.key) else null
@@ -360,7 +387,7 @@ class GameActivity : Activity() {
                     secondary = "Accueil" to { goHome() },
                 )
             }
-        }, 1500L)
+        }, wait)
     }
 
     private fun newFreeAgain(level: Level) {

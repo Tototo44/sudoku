@@ -42,6 +42,7 @@ object Colors {
     const val ERROR_BG = 0xFFF7E3DC.toInt()
     const val GOLD = 0xFFE3B23C.toInt()
     const val GOLD_SOFT = 0xFFF3DFA6.toInt()
+    const val SHINE = 0xFFF8ECC4.toInt()
     const val GOLD_DEEP = 0xFF5B4310.toInt()
     const val OR = 0xFFD4A22A.toInt()
     const val ARGENT = 0xFF9AA5AE.toInt()

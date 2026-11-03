@@ -62,6 +62,27 @@ class EngineTest {
     }
 
     @Test
+    fun lesNeufExemplairesDUnChiffre() {
+        val g = Daily.newGame(LocalDate.of(2026, 11, 3))
+        val empty = (0 until 81).filter { g.givens[it] == 0 }
+        // Un chiffre faux ne compte pas comme posé.
+        val first = empty[0]
+        val wrong = (1..9).first { it != g.solution[first] }
+        val left = g.remaining(wrong)
+        assertTrue(g.place(first, wrong) is Move.Wrong)
+        assertEquals(left, g.remaining(wrong))
+        g.erase(first)
+        for (k in empty) {
+            val d = g.solution[k]
+            val before = g.remaining(d)
+            val m = g.place(k, d) as Move.Right
+            assertEquals(before == 1, m.digitDone)
+            assertEquals(before - 1, g.remaining(d))
+        }
+        assertTrue((1..9).all { g.remaining(it) == 0 })
+    }
+
+    @Test
     fun troisErreursEtCestFini() {
         val g = Daily.newGame(LocalDate.of(2026, 10, 14))
         val empty = (0 until 81).filter { g.givens[it] == 0 }

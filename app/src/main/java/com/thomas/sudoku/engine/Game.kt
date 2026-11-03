@@ -11,11 +11,15 @@ sealed class Move {
     /** Chiffre faux : il s'affiche en rouge et compte une erreur. */
     data class Wrong(val errors: Int, val lost: Boolean) : Move()
 
-    /** Chiffre juste, avec les lignes, colonnes et carrés qu'il vient de terminer. */
+    /**
+     * Chiffre juste, avec les lignes, colonnes et carrés qu'il vient de terminer.
+     * [digitDone] : c'était le dernier des 9 exemplaires de ce chiffre.
+     */
     data class Right(
         val rows: List<Int>,
         val cols: List<Int>,
         val boxes: List<Int>,
+        val digitDone: Boolean,
         val won: Boolean,
     ) : Move()
 }
@@ -69,9 +73,10 @@ class Game(
         val rows = listOf(Cells.row(i)).filter { r -> Cells.rows[r].all { isSolved(it) } }
         val cols = listOf(Cells.col(i)).filter { c -> Cells.cols[c].all { isSolved(it) } }
         val boxes = listOf(Cells.box(i)).filter { b -> Cells.boxes[b].all { isSolved(it) } }
+        val digitDone = remaining(d) == 0
         val won = (0 until 81).all { isSolved(it) }
         if (won) status = Status.WON
-        return Move.Right(rows, cols, boxes, won)
+        return Move.Right(rows, cols, boxes, digitDone, won)
     }
 
     /** Ajoute ou retire un petit chiffre au crayon. Seulement dans une case vide. */
